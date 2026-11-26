@@ -1,6 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
+    <title>开博随感：为什么要有自己的基地</title>
+    <url>/posts/first-essay/</url>
+    <content><![CDATA[<p>在各个平台发内容，像是住在别人的房子里：装修要按房东的规矩，哪天平台没了，东西也就散了。</p>
+<p>所以想有一个自己的基地——服务器是自己的（哪怕暂时只是本地文件夹），排版是自己的，分类是自己定的。看过的番、玩过的游戏、突然冒出来的灵感，都放在固定的地方，过几年回来翻一翻，能看到自己走过的路。</p>
+<p>「记录」本身就有价值，哪怕没有读者。</p>
+<p>这是随感分类的第一篇。以后这里会放随笔、读后感，和一些不成熟但值得留下的想法。</p>
+]]></content>
+      <categories>
+        <category>随感</category>
+      </categories>
+      <tags>
+        <tag>随笔</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>博客开工：芒果基地搭建记</title>
     <url>/posts/hello-mango/</url>
     <content><![CDATA[<p>欢迎来到「芒果基地」🥭 —— 这是本站的第一篇文章，顺手把搭建过程记录下来。</p>
@@ -41,21 +56,6 @@
       <tags>
         <tag>Hexo</tag>
         <tag>搭建</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>开博随感：为什么要有自己的基地</title>
-    <url>/posts/first-essay/</url>
-    <content><![CDATA[<p>在各个平台发内容，像是住在别人的房子里：装修要按房东的规矩，哪天平台没了，东西也就散了。</p>
-<p>所以想有一个自己的基地——服务器是自己的（哪怕暂时只是本地文件夹），排版是自己的，分类是自己定的。看过的番、玩过的游戏、突然冒出来的灵感，都放在固定的地方，过几年回来翻一翻，能看到自己走过的路。</p>
-<p>「记录」本身就有价值，哪怕没有读者。</p>
-<p>这是随感分类的第一篇。以后这里会放随笔、读后感，和一些不成熟但值得留下的想法。</p>
-]]></content>
-      <categories>
-        <category>随感</category>
-      </categories>
-      <tags>
-        <tag>随笔</tag>
       </tags>
   </entry>
 </search>
