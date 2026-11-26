@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 420" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <linearGradient id="sub" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#fff0f6"/>
+      <stop offset=".55" stop-color="#ffdcec"/>
+      <stop offset="1" stop-color="#e6d6ff"/>
+    </linearGradient>
+    <g id="p2">
+      <ellipse cx="0" cy="0" rx="12" ry="7" fill="#ffb3cd" opacity=".7" transform="rotate(-22)"/>
+    </g>
+  </defs>
+  <rect width="1600" height="420" fill="url(#sub)"/>
+  <g opacity=".55" fill="#ffffff">
+    <ellipse cx="360" cy="110" rx="120" ry="36"/>
+    <ellipse cx="460" cy="90" rx="80" ry="28"/>
+    <ellipse cx="1240" cy="140" rx="110" ry="32" opacity=".7"/>
+  </g>
+  <use href="#p2" x="220" y="300"/>
+  <use href="#p2" x="540" y="330" transform="rotate(40 540 330)" opacity=".8"/>
+  <use href="#p2" x="880" y="290"/>
+  <use href="#p2" x="1160" y="330" transform="rotate(-35 1160 330)" opacity=".7"/>
+  <use href="#p2" x="1440" y="300"/>
+  <path d="M0 420 L0 380 Q 300 340 640 370 T 1600 360 L1600 420 Z" fill="#ffffff" opacity=".4"/>
+</svg>

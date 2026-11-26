@@ -1,0 +1,875 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>写作台 · 芒果基地</title>
+<link rel="icon" href="/img/favicon.svg">
+<script src="/lib/marked.min.js"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
+    min-height: 100vh;
+    background: linear-gradient(160deg, #fff0f6 0%, #ffdcec 40%, #e6d6ff 100%);
+    padding: 28px 16px 60px;
+  }
+  .wrap { max-width: 760px; margin: 0 auto; }
+  header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 18px;
+  }
+  header h1 {
+    font-size: 22px; color: #d1567f;
+    text-shadow: 0 1px 0 #fff;
+  }
+  .head-links { display: flex; gap: 14px; }
+  header a { color: #a06bb8; text-decoration: none; font-size: 14px; }
+  header a:hover { color: #d1567f; }
+
+  .tabs { display: flex; gap: 10px; margin-bottom: 14px; }
+  .tab {
+    flex: 1; padding: 11px 0; border: none; border-radius: 14px;
+    background: rgba(255,255,255,.6); color: #9a6d84; font-size: 15px;
+    cursor: pointer; transition: all .2s; font-weight: 600;
+  }
+  .tab.active {
+    background: linear-gradient(135deg, #ff9ec4, #c7b3f5);
+    color: #fff; box-shadow: 0 6px 16px rgba(255,123,169,.3);
+  }
+
+  .card {
+    background: rgba(255,255,255,.85);
+    border: 1px solid rgba(255,158,196,.35);
+    border-radius: 18px; padding: 20px;
+    box-shadow: 0 8px 24px rgba(255,123,169,.10);
+    display: flex; flex-direction: column; gap: 14px;
+  }
+  .hidden { display: none !important; }
+
+  input[type=text], input[type=number], textarea, select {
+    width: 100%; padding: 11px 14px; border-radius: 12px;
+    border: 1.5px solid #ffd3e3; background: #fff;
+    font-size: 14.5px; color: #4a3a42; outline: none;
+    transition: border .2s, box-shadow .2s;
+    font-family: inherit;
+  }
+  textarea { min-height: 260px; resize: vertical; line-height: 1.7; }
+  #r-comment { min-height: 80px; }
+  input:focus, textarea:focus, select:focus {
+    border-color: #ff9ec4; box-shadow: 0 0 0 3px rgba(255,158,196,.18);
+  }
+
+  .row { display: flex; gap: 10px; flex-wrap: wrap; }
+  .row > * { flex: 1; min-width: 130px; }
+
+  .pills { display: flex; gap: 8px; flex-wrap: wrap; }
+  .pill {
+    padding: 8px 16px; border-radius: 999px; border: 1.5px solid #ffd3e3;
+    background: #fff; color: #9a6d84; cursor: pointer; font-size: 14px;
+    transition: all .2s; font-family: inherit;
+  }
+  .pill.active {
+    background: linear-gradient(135deg, #ff9ec4, #c7b3f5);
+    color: #fff; border-color: transparent;
+    box-shadow: 0 3px 10px rgba(255,123,169,.3);
+  }
+
+  .edit-row { align-items: center; }
+  select { flex: 3; }
+  .mini {
+    flex: 1; padding: 10px 8px; border-radius: 12px; cursor: pointer;
+    border: 1.5px solid #ffd3e3; background: #fff; color: #9a6d84;
+    font-size: 13.5px; transition: all .2s; font-family: inherit;
+  }
+  .mini:hover { border-color: #ff9ec4; color: #d1567f; }
+  .mini.ghost { background: rgba(255,158,196,.08); }
+  .editing-tip {
+    font-size: 12.5px; color: #b05c8a; background: rgba(255,158,196,.14);
+    padding: 7px 12px; border-radius: 10px; display: none;
+  }
+
+  /* ── Markdown 工具栏 + 分屏预览 ─────────────────── */
+  .md-toolbar {
+    display: flex; flex-wrap: wrap; gap: 5px; align-items: center;
+  }
+  .md-toolbar button {
+    padding: 5px 10px; border-radius: 8px; cursor: pointer;
+    border: 1.5px solid #ffd3e3; background: #fff; color: #9a6d84;
+    font-size: 12.5px; transition: all .15s; font-family: inherit;
+  }
+  .md-toolbar button:hover { border-color: #ff9ec4; color: #d1567f; background: #fff5fa; }
+  .md-toolbar button.on {
+    background: linear-gradient(135deg, #ff9ec4, #c7b3f5);
+    color: #fff; border-color: transparent;
+  }
+  .t-spacer { flex: 1; }
+
+  .editor-split { display: grid; grid-template-columns: 1fr; gap: 10px; }
+  .editor-split.show-preview { grid-template-columns: 1fr 1fr; }
+  @media (max-width: 860px) { .editor-split.show-preview { grid-template-columns: 1fr; } }
+
+  #p-body { min-height: 340px; }
+
+  .preview {
+    background: #fffdf6; border: 1.5px dashed #ffd3e3; border-radius: 12px;
+    padding: 14px 18px; overflow: auto; max-height: 380px;
+    font-size: 14px; line-height: 1.8; color: #4a3a42;
+  }
+  .preview h1, .preview h2, .preview h3, .preview h4 { margin: 14px 0 8px; color: #4a3a42; }
+  .preview h2 { font-size: 1.3em; border-bottom: 1px solid #ffe1ee; padding-bottom: 4px; }
+  .preview h3 { font-size: 1.12em; }
+  .preview p { margin: 8px 0; }
+  .preview table { border-collapse: collapse; width: 100%; margin: 10px 0; font-size: .95em; }
+  .preview th, .preview td { border: 1px solid #f0dce6; padding: 6px 10px; }
+  .preview th { background: #fff0f6; }
+  .preview code {
+    background: rgba(255,158,196,.14); padding: 2px 6px; border-radius: 6px;
+    font-family: Consolas, monospace; font-size: .9em;
+  }
+  .preview pre {
+    background: #322f33; color: #f5f0f4; padding: 12px 14px;
+    border-radius: 10px; overflow: auto; margin: 10px 0;
+  }
+  .preview pre code { background: none; color: inherit; padding: 0; }
+  .preview blockquote {
+    border-left: 3px solid #ff9ec4; background: rgba(255,158,196,.08);
+    padding: 8px 12px; margin: 10px 0; border-radius: 0 8px 8px 0;
+  }
+  .preview img { max-width: 100%; border-radius: 10px; }
+  .preview a { color: #d1567f; }
+  .preview hr { border: none; border-top: 1px dashed #ffd3e3; margin: 14px 0; }
+  .preview ul, .preview ol { padding-left: 22px; margin: 8px 0; }
+
+  .foot { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+  .tip { font-size: 12.5px; color: #b08ea0; }
+  .save {
+    border: none; border-radius: 12px; padding: 11px 26px;
+    background: linear-gradient(135deg, #ff9ec4, #c7b3f5);
+    color: #fff; font-size: 15px; font-weight: 700; cursor: pointer;
+    box-shadow: 0 5px 14px rgba(255,123,169,.35); transition: all .2s;
+    font-family: inherit;
+  }
+  .save:hover { transform: translateY(-2px); box-shadow: 0 8px 18px rgba(255,123,169,.45); }
+  .save:disabled { opacity: .6; cursor: wait; transform: none; }
+
+  .msg {
+    margin-top: 14px; padding: 12px 16px; border-radius: 12px;
+    font-size: 14px; line-height: 1.6;
+  }
+  .msg.ok { background: rgba(163,230,193,.35); color: #217a5b; }
+  .msg.err { background: rgba(255,190,190,.4); color: #b03a3a; }
+  .msg a { color: inherit; font-weight: 700; }
+
+  .hint {
+    margin-top: 16px; text-align: center; font-size: 13px; color: #a08494;
+  }
+  .hint a { color: #d1567f; font-weight: 600; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>🥭 芒果基地 · 写作台</h1>
+    <div class="head-links">
+      <a href="/settings/">⚙️ 设置</a>
+      <a href="/" id="back-link">← 回博客首页</a>
+    </div>
+  </header>
+
+  <div class="tabs">
+    <button class="tab active" data-tab="post">✍️ 写文章</button>
+    <button class="tab" data-tab="record">📺 快速记录</button>
+    <button class="tab" data-tab="idea">💡 灵感</button>
+  </div>
+
+  <!-- 写文章 -->
+  <section id="tab-post" class="card">
+    <div class="row edit-row">
+      <select id="p-list"></select>
+      <button class="mini" id="p-load">📂 载入</button>
+      <button class="mini" id="p-del">🗑 删除</button>
+      <button class="mini ghost" id="p-new">➕ 新文章</button>
+      <button class="mini" id="p-import">📄 导入TXT</button>
+      <input type="file" id="p-txt" accept=".txt,text/plain" class="hidden">
+    </div>
+    <input type="text" id="p-title" placeholder="文章标题" maxlength="80">
+    <div class="row">
+      <div class="pills" id="p-cat">
+        <button class="pill active" data-v="随感">📝 随感</button>
+        <button class="pill" data-v="技术">💻 技术</button>
+      </div>
+    </div>
+    <input type="text" id="p-tags" placeholder="标签，用逗号隔开（可留空），如：生活, 周记">
+    <div class="md-toolbar" id="md-bar">
+      <button data-act="h2" title="小标题">H2</button>
+      <button data-act="h3" title="小标题">H3</button>
+      <button data-act="bold" title="加粗"><b>B</b></button>
+      <button data-act="italic" title="斜体"><i>I</i></button>
+      <button data-act="quote" title="引用">❝</button>
+      <button data-act="ul" title="无序列表">•≡</button>
+      <button data-act="ol" title="有序列表">1≡</button>
+      <button data-act="code" title="行内代码">‹›</button>
+      <button data-act="codeblock" title="代码块">{ }</button>
+      <button data-act="table" title="表格">⊞ 表格</button>
+      <button data-act="link" title="链接">🔗</button>
+      <button data-act="image" title="上传图片">🖼 图片</button>
+      <button data-act="hr" title="分割线">—</button>
+      <span class="t-spacer"></span>
+      <button data-act="preview" id="pv-btn" title="实时预览">👁 预览</button>
+    </div>
+    <input type="file" id="p-img" accept="image/*" class="hidden">
+    <div class="editor-split" id="editor-split">
+      <textarea id="p-body" placeholder="在这里写正文——用上面的按钮插入标题、表格、代码块、图片等，不用背语法。"></textarea>
+      <div id="p-preview" class="preview hidden"></div>
+    </div>
+    <div class="editing-tip" id="p-editing"></div>
+    <div class="foot">
+      <span class="tip">保存即发布 · 前台刷新立即可见</span>
+      <button class="save" id="p-save">🚀 保存发布</button>
+    </div>
+  </section>
+
+  <!-- 快速记录 -->
+  <section id="tab-record" class="card hidden">
+    <div class="pills" id="r-type">
+      <button class="pill active" data-v="bangumi">📺 番剧</button>
+      <button class="pill" data-v="galgame">🎮 Galgame</button>
+      <button class="pill" data-v="works">🎨 作品</button>
+      <button class="pill" data-v="music">🎵 音乐</button>
+    </div>
+    <div class="row edit-row">
+      <select id="r-list"><option value="">— 选择已有记录可编辑 / 删除 —</option></select>
+      <button class="mini" id="r-load">📂 载入</button>
+      <button class="mini" id="r-del">🗑 删除</button>
+      <button class="mini ghost" id="r-new">➕ 新增</button>
+    </div>
+    <div class="editing-tip" id="r-editing"></div>
+    <input type="text" id="r-title" placeholder="标题（番名 / 游戏名 / 作品名 / 歌名）" maxlength="60">
+    <div class="row" id="r-status-row">
+      <select id="r-status"></select>
+      <input type="number" id="r-score" step="0.5" min="0" max="5" placeholder="评分 0-5（可留空）">
+    </div>
+    <div class="row hidden" id="r-music-row">
+      <input type="text" id="r-artist" placeholder="歌手" maxlength="40">
+      <select id="r-server">
+        <option value="netease">网易云</option>
+        <option value="tencent">QQ 音乐</option>
+      </select>
+      <input type="text" id="r-id" placeholder="歌曲 ID（纯数字）" maxlength="30">
+    </div>
+    <input type="text" id="r-category" class="hidden" list="cat-list" placeholder="作品分类（可自定义）" maxlength="20">
+    <datalist id="cat-list">
+      <option value="MAD"><option value="建模"><option value="文章">
+    </datalist>
+    <div class="row hidden" id="r-works-tools">
+      <button class="mini" id="r-bili">📺 从B站链接抓封面</button>
+      <input type="file" id="r-file" accept="image/*" title="上传建模渲染图等本地图片">
+    </div>
+    <input type="text" id="r-cover" placeholder="封面图地址（可留空）">
+    <input type="text" id="r-link" placeholder="相关链接（可留空）">
+    <textarea id="r-comment" placeholder="短评 / 歌曲备注（可留空）"></textarea>
+    <div class="foot">
+      <span class="tip">保存后记录墙自动更新</span>
+      <button class="save" id="r-save">✅ 保存记录</button>
+    </div>
+  </section>
+
+  <!-- 灵感 -->
+  <section id="tab-idea" class="card hidden">
+    <textarea id="i-content" placeholder="想到什么写什么……一句话也行，一段想法也行。&#10;灵感保存在本地草稿库，不会公开；发酵成熟后可一键转正为文章。"></textarea>
+    <input type="text" id="i-tags" placeholder="标签，逗号隔开（可留空），如：产品想法, 写作素材">
+    <div class="foot">
+      <span class="tip">仅本地可见 · 可一键转正为文章</span>
+      <button class="save" id="i-save">💡 存入灵感库</button>
+    </div>
+    <a class="mq-gowrite" href="/ideas/" style="font-size:14px;font-weight:600;">📖 打开灵感笔记本（浏览 / 编辑 / 转正）→</a>
+    <div class="insp-list" id="i-list"></div>
+  </section>
+
+  <div id="msg" class="msg hidden"></div>
+
+  <div class="hint">
+    番剧 / Galgame / 作品的记录也可以全部在这里维护；更复杂的事直接对 ZCode 说。
+  </div>
+</div>
+
+<script>
+  var $ = function (id) { return document.getElementById(id); };
+
+  // 智能返回：从哪进来就回哪去（referrer → sessionStorage 兜底 → 首页）
+  (function () {
+    var back = $('back-link');
+    var p = null;
+    try {
+      var ref = document.referrer || '';
+      if (ref.indexOf(location.origin) === 0) p = ref.slice(location.origin.length) || '/';
+      if (!p || /^\/(write|ideas|admin|api)/.test(p)) {
+        p = sessionStorage.getItem('mango-last') || null;
+      }
+    } catch (e) { p = null; }
+    if (p && !/^\/(write|ideas|admin|api)/.test(p)) {
+      var names = {
+        '/bangumi/': '番剧墙', '/galgame/': 'Galgame 墙', '/works/': '作品墙',
+        '/music/': '音乐页', '/ideas/': '灵感笔记本', '/home/': '首页', '/': '博客首页'
+      };
+      back.href = p;
+      back.textContent = '← 返回' + (names[p] || '上一页');
+    }
+  })();
+
+  // 标签页切换
+  document.querySelectorAll('.tab').forEach(function (t) {
+    t.addEventListener('click', function () {
+      document.querySelectorAll('.tab').forEach(function (x) { x.classList.remove('active'); });
+      document.querySelectorAll('.card').forEach(function (x) { x.classList.add('hidden'); });
+      t.classList.add('active');
+      $('tab-' + t.dataset.tab).classList.remove('hidden');
+      hideMsg();
+    });
+  });
+
+  // 药丸选择器（单选）
+  function bindPills(id, onChange) {
+    var box = $(id);
+    box.addEventListener('click', function (e) {
+      var b = e.target.closest('.pill');
+      if (!b) return;
+      box.querySelectorAll('.pill').forEach(function (x) { x.classList.remove('active'); });
+      b.classList.add('active');
+      if (onChange) onChange(b.dataset.v);
+    });
+    return function () { return box.querySelector('.pill.active').dataset.v; };
+  }
+  var getCat = bindPills('p-cat');
+  var getRecType = bindPills('r-type', setRecordFieldVisibility);
+
+  // 记录类型 → 表单联动
+  var STATUS = {
+    bangumi: ['在看', '看完', '弃'],
+    galgame: ['想玩', '在玩', '通关', '弃坑']
+  };
+  var editingIndex = null;
+  var pendingIndex = null;
+  var recordList = [];
+
+  function setRecordFieldVisibility(t) {
+    var isWork = t === 'works';
+    var isMusic = t === 'music';
+    var isStatusType = t === 'bangumi' || t === 'galgame';
+    $('r-status-row').classList.toggle('hidden', !isStatusType);
+    $('r-music-row').classList.toggle('hidden', !isMusic);
+    $('r-category').classList.toggle('hidden', !isWork);
+    $('r-works-tools').classList.toggle('hidden', !isWork);
+    $('r-cover').classList.toggle('hidden', isMusic);
+    $('r-link').classList.toggle('hidden', isMusic);
+    if (isStatusType) {
+      $('r-status').innerHTML = STATUS[t].map(function (s) {
+        return '<option value="' + s + '">' + s + '</option>';
+      }).join('');
+    }
+  }
+
+  function clearRecordForm() {
+    editingIndex = null;
+    ['r-title', 'r-artist', 'r-id', 'r-cover', 'r-link', 'r-comment', 'r-score'].forEach(function (id) { $(id).value = ''; });
+    $('r-editing').style.display = 'none';
+  }
+
+  function refreshRecordList() {
+    var t = getRecType();
+    fetch('/api/records?type=' + encodeURIComponent(t)).then(function (r) { return r.json(); }).then(function (res) {
+      if (!res.ok) return;
+      recordList = res.records;
+      var sel = $('r-list');
+      sel.innerHTML = '<option value="">— 选择已有记录可编辑 / 删除 —</option>' + recordList.map(function (r, i) {
+        return '<option value="' + i + '">' + (r.title || r.name || '') + '</option>';
+      }).join('');
+      // 深链（记录墙 ✏️ 直达）：列表就绪后自动载入目标记录
+      if (pendingIndex !== null) {
+        var pi = pendingIndex;
+        pendingIndex = null;
+        loadRecord(pi);
+      }
+    });
+  }
+
+  function loadRecord(i) {
+    if (isNaN(i) || !recordList[i]) { showMsg(false, '😢 没有找到这条记录'); return; }
+    var r = recordList[i];
+    clearRecordForm();
+    editingIndex = i;
+    $('r-title').value = r.title || r.name || '';
+    $('r-artist').value = r.artist || '';
+    $('r-server').value = r.server || 'netease';
+    $('r-id').value = r.id || '';
+    $('r-status').value = r.status || '';
+    $('r-score').value = r.score || '';
+    $('r-category').value = r.category || '';
+    $('r-cover').value = r.cover || '';
+    $('r-link').value = r.link || '';
+    $('r-comment').value = r.comment || r.desc || '';
+    $('r-editing').textContent = '✏️ 正在编辑第 ' + (i + 1) + ' 条记录';
+    $('r-editing').style.display = 'block';
+    hideMsg();
+    dirty = false;
+  }
+
+  $('r-load').addEventListener('click', function () {
+    loadRecord(parseInt($('r-list').value, 10));
+  });
+
+  $('r-new').addEventListener('click', function () {
+    clearRecordForm();
+    hideMsg();
+  });
+
+  $('r-del').addEventListener('click', function () {
+    var i = parseInt($('r-list').value, 10);
+    if (isNaN(i)) { showMsg(false, '😢 先在上面的下拉框里选一条记录'); return; }
+    var name = (recordList[i] && (recordList[i].title || recordList[i].name)) || '';
+    if (!confirm('确定要删除「' + name + '」吗？删除后无法恢复。')) return;
+    post('/api/record/delete', { type: getRecType(), index: i }, this, function (res) {
+      if (res.ok) {
+        showMsg(true, '🗑 ' + res.message);
+        clearRecordForm();
+        refreshRecordList();
+      } else {
+        showMsg(false, '😢 ' + res.message);
+      }
+    });
+  });
+
+  // 保存记录（新增 或 编辑）
+  $('r-save').addEventListener('click', function () {
+    var t = getRecType();
+    var data = { type: t, title: $('r-title').value };
+    if (t === 'works') {
+      data.category = $('r-category').value;
+      data.cover = $('r-cover').value;
+      data.link = $('r-link').value;
+      data.desc = $('r-comment').value;
+    } else if (t === 'music') {
+      data.artist = $('r-artist').value;
+      data.server = $('r-server').value;
+      data.id = $('r-id').value;
+      data.comment = $('r-comment').value;
+    } else {
+      data.status = $('r-status').value;
+      data.score = $('r-score').value;
+      data.cover = $('r-cover').value;
+      data.comment = $('r-comment').value;
+      data.link = $('r-link').value;
+    }
+    if (editingIndex !== null) data.index = editingIndex;
+    post('/api/record', data, this, function (res) {
+      if (res.ok) {
+        var target = t === 'works' ? '/works/' : t === 'music' ? '/music/' : '/' + t + '/';
+        showMsg(true, '✅ ' + res.message + '，正在返回记录墙…');
+        setTimeout(function () { location.href = target; }, 900);
+      } else {
+        showMsg(false, '😢 ' + res.message);
+      }
+    });
+  });
+
+  function showMsg(ok, text) {
+    var m = $('msg');
+    m.className = 'msg ' + (ok ? 'ok' : 'err');
+    m.innerHTML = text;
+  }
+  function hideMsg() { $('msg').classList.add('hidden'); }
+
+  function post(url, data, btn, done) {
+    btn.disabled = true;
+    fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    }).then(function (r) { return r.json(); }).then(function (res) {
+      done(res);
+    }).catch(function () {
+      done({ ok: false, message: '网络错误，请确认博客服务已启动' });
+    }).finally(function () { btn.disabled = false; });
+  }
+
+  // 保存文章（新建 或 编辑旧文章）
+  var editingFile = null;
+
+  function refreshPostList() {
+    fetch('/api/posts').then(function (r) { return r.json(); }).then(function (res) {
+      if (!res.ok) return;
+      var sel = $('p-list');
+      sel.innerHTML = '<option value="">— 选择要编辑的旧文章 —</option>' + res.posts.map(function (p) {
+        return '<option value="' + p.file + '">' + p.title + '</option>';
+      }).join('');
+    });
+  }
+  refreshPostList();
+
+  $('p-load').addEventListener('click', function () {
+    var f = $('p-list').value;
+    if (!f) { showMsg(false, '😢 先在上面的下拉框里选一篇文章'); return; }
+    fetch('/api/post?file=' + encodeURIComponent(f)).then(function (r) { return r.json(); }).then(function (res) {
+      if (!res.ok) { showMsg(false, '😢 ' + res.message); return; }
+      var p = res.post;
+      editingFile = f;
+      $('p-title').value = p.title;
+      $('p-body').value = p.body;
+      $('p-tags').value = (p.tags || []).join(', ');
+      var catBox = $('p-cat');
+      catBox.querySelectorAll('.pill').forEach(function (x) {
+        x.classList.toggle('active', x.dataset.v === p.category);
+      });
+      $('p-editing').textContent = '✏️ 正在编辑：' + f;
+      $('p-editing').style.display = 'block';
+      hideMsg();
+    });
+  });
+
+  // 删除当前载入的文章
+  $('p-del').addEventListener('click', function () {
+    if (!editingFile) { showMsg(false, '😢 先「📂 载入」一篇文章再删除'); return; }
+    if (!confirm('确定删除《' + $('p-title').value + '》吗？删除后无法恢复。')) return;
+    fetch('/api/post/delete', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ file: editingFile })
+    }).then(function (r) { return r.json(); }).then(function (res) {
+      if (res.ok) {
+        showMsg(true, res.message);
+        editingFile = null;
+        $('p-editing').style.display = 'none';
+        $('p-title').value = ''; $('p-tags').value = ''; $('p-body').value = '';
+        refreshPostList();
+        dirty = false;
+      } else showMsg(false, '😢 ' + res.message);
+    }).catch(function () { showMsg(false, '😢 删除失败，请确认博客服务已启动'); });
+  });
+
+  $('p-new').addEventListener('click', function () {
+    editingFile = null;
+    $('p-editing').style.display = 'none';
+    $('p-title').value = ''; $('p-tags').value = ''; $('p-body').value = '';
+    hideMsg();
+    dirty = false;
+  });
+
+  // ── TXT 导入：自动识别编码 + 章节转标题 + 段落重排 ──────
+  function txt2md(text) {
+    var lines = text.replace(/\r\n?/g, '\n').split('\n');
+    var out = [];
+    var para = [];
+    var chapterRe = /^(第\s*[0-9一二三四五六七八九十百千零〇两]+\s*[章节回卷部集]|序章|序言|楔子|前言|后记|尾声|番外|终章|Chapter\s*\d+)/i;
+    function flush() {
+      if (para.length) { out.push(para.join('')); para = []; }
+    }
+    lines.forEach(function (raw) {
+      var line = raw.trim();
+      if (!line) { flush(); return; }
+      if (chapterRe.test(line) && line.length <= 40) { flush(); out.push('## ' + line); return; }
+      para.push(line);
+    });
+    flush();
+    return out.join('\n\n');
+  }
+
+  $('p-import').addEventListener('click', function () { $('p-txt').click(); });
+  $('p-txt').addEventListener('change', function () {
+    var f = this.files && this.files[0];
+    if (!f) return;
+    this.value = '';
+    var reader = new FileReader();
+    reader.onload = function () {
+      var buf = new Uint8Array(reader.result);
+      var text;
+      try { text = new TextDecoder('utf-8', { fatal: true }).decode(buf); }
+      catch (e) {
+        try { text = new TextDecoder('gbk').decode(buf); }
+        catch (e2) { text = new TextDecoder('utf-8').decode(buf); }
+      }
+      if (text.charCodeAt(0) === 0xFEFF) text = text.slice(1);
+      var title = f.name.replace(/\.txt$/i, '');
+      var md = txt2md(text);
+      editingFile = null;
+      $('p-editing').style.display = 'none';
+      $('p-title').value = title;
+      $('p-body').value = md;
+      dirty = true;
+      showMsg(true, '📄 已导入《' + title + '》：自动识别 ' + (md.match(/^## /gm) || []).length + ' 个章节标题并重排段落。请核对后点「🚀 保存发布」');
+    };
+    reader.readAsArrayBuffer(f);
+  });
+
+  $('p-save').addEventListener('click', function () {
+    var tags = $('p-tags').value.split(/[,，、]/).map(function (s) { return s.trim(); }).filter(Boolean);
+    var payload = {
+      title: $('p-title').value,
+      category: getCat(),
+      tags: tags,
+      body: $('p-body').value
+    };
+    if (editingFile) payload.file = editingFile;
+    post('/api/write', payload, this, function (res) {
+      if (res.ok) {
+        if (payload.file) {
+          showMsg(true, '✅ 修改已保存！<a href="' + res.url + '" target="_blank">查看文章</a>');
+        } else {
+          showMsg(true, '🎉 发布成功！<a href="' + res.url + '" target="_blank">点击查看文章</a>（或去博客前台刷新）');
+          refreshPostList();
+        }
+        $('p-title').value = ''; $('p-tags').value = ''; $('p-body').value = '';
+        editingFile = null;
+        $('p-editing').style.display = 'none';
+        dirty = false;
+      } else {
+        showMsg(false, '😢 ' + res.message);
+      }
+    });
+  });
+
+  // 作品工具：B站封面抓取 + 图片上传
+  $('r-bili').addEventListener('click', function () {
+    var input = $('r-link').value;
+    if (!input) { showMsg(false, '😢 先在"相关链接"里填上B站视频链接或 BV 号'); return; }
+    this.disabled = true;
+    post('/api/bilibili/cover', { input: input }, this, function (res) {
+      if (res.ok) {
+        $('r-cover').value = res.cover;
+        showMsg(true, '📺 封面抓取成功');
+      } else {
+        showMsg(false, '😢 ' + res.message);
+      }
+    });
+  });
+  $('r-file').addEventListener('change', function () {
+    var f = this.files && this.files[0];
+    if (!f) return;
+    if (f.size > 8 * 1024 * 1024) { showMsg(false, '😢 图片超过 8MB，请压缩后再上传'); this.value = ''; return; }
+    var btn = this;
+    var reader = new FileReader();
+    reader.onload = function () {
+      post('/api/upload', { name: f.name, data: reader.result }, btn, function (res) {
+        if (res.ok) {
+          $('r-cover').value = res.path;
+          showMsg(true, '🖼 图片已上传：' + res.path);
+        } else {
+          showMsg(false, '😢 ' + res.message);
+        }
+        btn.value = '';
+      });
+    };
+    reader.readAsDataURL(f);
+  });
+
+  // 灵感模块
+  function esc2(s) { return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;'); }
+  function loadIdeaList() {
+    fetch('/api/inspirations').then(function (r) { return r.json(); }).then(function (res) {
+      if (!res.ok) return;
+      var box = $('i-list');
+      if (!res.inspirations.length) { box.innerHTML = '<p class="tip">灵感库还是空的——写下第一条吧。</p>'; return; }
+      box.innerHTML = res.inspirations.map(function (it) {
+        return '<div class="insp-item"><div class="insp-meta">' + esc2(it.date) + ' · ' + esc2(it.status)
+          + '</div><div class="insp-text">' + esc2(it.excerpt) + '</div>'
+          + (it.related && it.related.length ? '<div class="insp-rel">🔗 相关：' + esc2(it.related.join(' / ')) + '</div>' : '')
+          + '<div class="insp-actions"><button class="mini" data-promote="' + esc2(it.file) + '">📝 转正</button>'
+          + '<button class="mini ghost" data-del="' + esc2(it.file) + '">🗑</button></div></div>';
+      }).join('');
+    });
+  }
+  $('i-save').addEventListener('click', function () {
+    var tags = $('i-tags').value.split(/[,，、]/).map(function (s) { return s.trim(); }).filter(Boolean);
+    post('/api/inspiration', { content: $('i-content').value, tags: tags }, this, function (res) {
+      if (res.ok) { showMsg(true, res.message); $('i-content').value = ''; $('i-tags').value = ''; loadIdeaList(); }
+      else showMsg(false, '😢 ' + res.message);
+    });
+  });
+  $('i-list').addEventListener('click', function (e) {
+    var b = e.target.closest('button');
+    if (!b) return;
+    if (b.dataset.promote) {
+      var title = prompt('转正后的文章标题：');
+      if (title === null) return;
+      if (!title.trim()) { showMsg(false, '😢 标题不能为空'); return; }
+      post('/api/inspiration/promote', { file: b.dataset.promote, title: title.trim() }, b, function (res) {
+        if (res.ok) {
+          showMsg(true, '🎉 ' + res.message + '，已自动载入编辑表单，润色后点「保存发布」');
+          refreshPostList();
+          editingFile = res.file;
+          fetch('/api/post?file=' + encodeURIComponent(res.file)).then(function (r) { return r.json(); }).then(function (j) {
+            if (!j.ok) return;
+            $('p-title').value = j.post.title;
+            $('p-body').value = j.post.body;
+            $('p-tags').value = (j.post.tags || []).join(', ');
+            var catBox = $('p-cat');
+            catBox.querySelectorAll('.pill').forEach(function (x) { x.classList.toggle('active', x.dataset.v === (j.post.category || '随感')); });
+            document.querySelector('.tab[data-tab="post"]').click();
+          });
+        } else showMsg(false, '😢 ' + res.message);
+      });
+    }
+    if (b.dataset.del) {
+      if (!confirm('确定删除这条灵感吗？')) return;
+      post('/api/inspiration/delete', { file: b.dataset.del }, b, function (res) {
+        if (res.ok) { showMsg(true, res.message); loadIdeaList(); }
+        else showMsg(false, '😢 ' + res.message);
+      });
+    }
+  });
+  loadIdeaList();
+
+  // ── 快捷键 + 未保存离开提醒 ─────────────────────────
+  var dirty = false;
+  function markDirty() { dirty = true; }
+  pbody.addEventListener('input', markDirty);
+  $('p-title').addEventListener('input', markDirty);
+  $('p-tags').addEventListener('input', markDirty);
+  $('i-content').addEventListener('input', markDirty);
+  $('r-title').addEventListener('input', markDirty);
+
+  function clearDirty() { dirty = false; }
+
+  window.addEventListener('beforeunload', function (e) {
+    if (dirty) { e.preventDefault(); e.returnValue = ''; }
+  });
+
+  document.addEventListener('keydown', function (e) {
+    if (!(e.ctrlKey || e.metaKey)) return;
+    var k = e.key.toLowerCase();
+    var inBody = document.activeElement === pbody;
+    if (k === 's') {
+      var postVisible = !$('tab-post').classList.contains('hidden');
+      var recordVisible = !$('tab-record').classList.contains('hidden');
+      if (postVisible || recordVisible) {
+        e.preventDefault();
+        if (postVisible) $('p-save').click(); else $('r-save').click();
+      }
+    } else if (inBody && k === 'b') {
+      e.preventDefault();
+      surround('**', '**', '加粗文字');
+    } else if (inBody && k === 'i') {
+      e.preventDefault();
+      surround('*', '*', '斜体文字');
+    }
+  });
+
+  // 初始化：默认表单状态 + 加载记录列表
+  setRecordFieldVisibility(getRecType());
+  refreshRecordList();
+
+  // ── Markdown 工具栏 + 实时预览 ─────────────────────
+  var pbody = $('p-body');
+  var previewOn = false;
+  if (window.marked) marked.use({ gfm: true, breaks: true });
+
+  function schedulePreview() {
+    if (!previewOn) return;
+    clearTimeout(schedulePreview.t);
+    schedulePreview.t = setTimeout(function () {
+      $('p-preview').innerHTML = window.marked
+        ? marked.parse(pbody.value || '*（暂无内容）*')
+        : '<p>预览组件加载失败</p>';
+    }, 220);
+  }
+  pbody.addEventListener('input', schedulePreview);
+
+  function surround(before, after, placeholder) {
+    var s = pbody.selectionStart, e = pbody.selectionEnd;
+    var sel = pbody.value.slice(s, e) || (placeholder || '');
+    pbody.value = pbody.value.slice(0, s) + before + sel + after + pbody.value.slice(e);
+    pbody.selectionStart = s + before.length;
+    pbody.selectionEnd = s + before.length + sel.length;
+    pbody.focus();
+    schedulePreview();
+  }
+  function prefixLines(prefix) {
+    var s = pbody.selectionStart, e = pbody.selectionEnd;
+    var start = pbody.value.lastIndexOf('\n', s - 1) + 1;
+    var end = pbody.value.indexOf('\n', e);
+    if (end === -1) end = pbody.value.length;
+    var lines = pbody.value.slice(start, end).split('\n')
+      .map(function (l) { return l.length ? prefix + l : l; }).join('\n');
+    pbody.value = pbody.value.slice(0, start) + lines + pbody.value.slice(end);
+    pbody.selectionStart = start;
+    pbody.selectionEnd = start + lines.length;
+    pbody.focus();
+    schedulePreview();
+  }
+  function insertBlock(text) {
+    var s = pbody.selectionStart;
+    var before = pbody.value.slice(0, s);
+    var pad = before && !before.endsWith('\n\n') ? (before.endsWith('\n') ? '\n' : '\n\n') : '';
+    pbody.value = before + pad + text + pbody.value.slice(s);
+    pbody.focus();
+    schedulePreview();
+  }
+
+  var TABLE_TPL = '| 表头1 | 表头2 | 表头3 |\n| --- | --- | --- |\n| 内容 | 内容 | 内容 |';
+
+  $('md-bar').addEventListener('click', function (e) {
+    var b = e.target.closest('button');
+    if (!b) return;
+    var act = b.dataset.act;
+    if (act === 'h2') prefixLines('## ');
+    else if (act === 'h3') prefixLines('### ');
+    else if (act === 'bold') surround('**', '**', '加粗文字');
+    else if (act === 'italic') surround('*', '*', '斜体文字');
+    else if (act === 'quote') prefixLines('> ');
+    else if (act === 'ul') prefixLines('- ');
+    else if (act === 'ol') prefixLines('1. ');
+    else if (act === 'code') surround('`', '`', '代码');
+    else if (act === 'codeblock') insertBlock('```\n这里写代码\n```');
+    else if (act === 'table') insertBlock(TABLE_TPL);
+    else if (act === 'link') surround('[', '](https://)', '链接文字');
+    else if (act === 'hr') insertBlock('---');
+    else if (act === 'image') $('p-img').click();
+    else if (act === 'preview') {
+      previewOn = !previewOn;
+      $('editor-split').classList.toggle('show-preview', previewOn);
+      $('p-preview').classList.toggle('hidden', !previewOn);
+      b.classList.toggle('on', previewOn);
+      schedulePreview();
+    }
+  });
+
+  // 编辑器内图片上传：上传成功后在光标处插入 ![](路径)
+  $('p-img').addEventListener('change', function () {
+    var f = this.files && this.files[0];
+    if (!f) return;
+    this.value = '';
+    if (f.size > 8 * 1024 * 1024) { showMsg(false, '😢 图片超过 8MB，请压缩后再上传'); return; }
+    var reader = new FileReader();
+    reader.onload = function () {
+      fetch('/api/upload', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: f.name, data: reader.result })
+      }).then(function (r) { return r.json(); }).then(function (res) {
+        if (res.ok) {
+          surround('![' + f.name.replace(/\.[^.]+$/, '') + '](', ')', res.path);
+          showMsg(true, '🖼 图片已上传并插入正文');
+        } else showMsg(false, '😢 ' + res.message);
+      }).catch(function () { showMsg(false, '😢 上传失败，请确认博客服务已启动'); });
+    };
+    reader.readAsDataURL(f);
+  });
+
+  // 支持 /write/?tab=idea 直达灵感标签；?tab=record&type=x&index=n 从记录墙 ✏️ 直达编辑
+  var qp = new URLSearchParams(location.search);
+  var wantTab = qp.get('tab');
+  if (wantTab) {
+    var tb = document.querySelector('.tab[data-tab="' + wantTab + '"]');
+    if (tb) tb.click();
+  }
+  var deepType = qp.get('type');
+  if (deepType) {
+    var dp = document.querySelector('#r-type [data-v="' + deepType + '"]');
+    if (dp) {
+      var di = parseInt(qp.get('index'), 10);
+      pendingIndex = isNaN(di) ? null : di;
+      dp.click();
+      refreshRecordList();
+    }
+  }
+</script>
+<script src="/js/bgm.js"></script></body>
+</html>

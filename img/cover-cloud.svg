@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 480" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <linearGradient id="g3" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#d8f3ff"/>
+      <stop offset="1" stop-color="#b3d9ff"/>
+    </linearGradient>
+  </defs>
+  <rect width="800" height="480" fill="url(#g3)"/>
+  <g fill="#ffffff" opacity=".85">
+    <ellipse cx="220" cy="200" rx="110" ry="36"/>
+    <ellipse cx="310" cy="175" rx="75" ry="27"/>
+    <ellipse cx="150" cy="180" rx="60" ry="23"/>
+    <ellipse cx="600" cy="330" rx="95" ry="30" opacity=".7"/>
+    <ellipse cx="665" cy="310" rx="55" ry="20" opacity=".7"/>
+  </g>
+  <circle cx="640" cy="110" r="66" fill="#fff6c9" opacity=".95"/>
+  <text x="400" y="270" font-size="120" text-anchor="middle">☁️</text>
+</svg>

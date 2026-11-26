@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>灵感笔记本 · 芒果基地</title>
+<link rel="icon" href="/img/favicon.svg">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
+    min-height: 100vh;
+    background: linear-gradient(160deg, #fff0f6 0%, #ffe3f0 35%, #f3e8ff 100%);
+    padding: 26px 18px 70px;
+  }
+  .wrap { max-width: 900px; margin: 0 auto; }
+
+  header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; flex-wrap: wrap; gap: 8px; }
+  header h1 { font-size: 22px; color: #d1567f; text-shadow: 0 1px 0 #fff; }
+  header a { color: #a06bb8; text-decoration: none; font-size: 14px; }
+
+  .toolbar { display: flex; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; }
+  .toolbar input[type=text] {
+    flex: 1; min-width: 180px; padding: 10px 14px; border-radius: 12px;
+    border: 1.5px solid #ffd3e3; background: rgba(255,255,255,.85);
+    font-size: 14px; outline: none; font-family: inherit;
+  }
+  .toolbar input:focus { border-color: #ff9ec4; }
+  .toolbar .new-btn {
+    padding: 10px 20px; border: none; border-radius: 12px; cursor: pointer;
+    background: linear-gradient(135deg, #ff9ec4, #c7b3f5); color: #fff;
+    font-size: 14px; font-weight: 700; font-family: inherit;
+    box-shadow: 0 4px 12px rgba(255,123,169,.3);
+  }
+
+  /* 笔记卡片墙 */
+  .notes { column-count: 2; column-gap: 14px; }
+  @media (max-width: 640px) { .notes { column-count: 1; } }
+  .note {
+    break-inside: avoid; margin-bottom: 14px; padding: 14px 16px;
+    border-radius: 12px; cursor: pointer; position: relative;
+    border: 1px solid rgba(0,0,0,.05);
+    box-shadow: 0 3px 10px rgba(160,110,160,.10);
+    transition: transform .18s, box-shadow .18s;
+    background: #fffdf6;
+  }
+  .note:nth-child(3n) { background: #fff7fb; }
+  .note:nth-child(3n+1) { background: #fbf7ff; }
+  .note:nth-child(4n) { background: #f3fbff; }
+  .note:hover { transform: translateY(-3px) rotate(-.4deg); box-shadow: 0 8px 20px rgba(255,123,169,.22); }
+  .note-meta { font-size: 11.5px; color: #b08ea0; display: flex; justify-content: space-between; margin-bottom: 6px; }
+  .note-status { padding: 1px 8px; border-radius: 999px; background: rgba(255,158,196,.18); color: #c2507e; font-size: 11px; }
+  .note-status.发酵 { background: rgba(178,141,255,.18); color: #7b52c9; }
+  .note-status.已转正 { background: rgba(163,230,193,.4); color: #217a5b; }
+  .note-text {
+    font-size: 13.8px; line-height: 1.65; color: #4a3a42; white-space: pre-wrap; word-break: break-word;
+    display: -webkit-box; -webkit-line-clamp: 6; -webkit-box-orient: vertical; overflow: hidden;
+  }
+  .note-rel { margin-top: 8px; font-size: 11.5px; color: #a06bb8; }
+  .empty { text-align: center; padding: 50px 0; color: #a08494; background: rgba(255,255,255,.6); border-radius: 16px; }
+
+  /* 详情 / 编辑视图 */
+  .panel {
+    background: rgba(255,255,255,.92); border: 1px solid rgba(255,158,196,.35);
+    border-radius: 16px; padding: 22px; box-shadow: 0 8px 24px rgba(255,123,169,.12);
+  }
+  .panel .meta { font-size: 12.5px; color: #b08ea0; margin-bottom: 12px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  .panel .content {
+    font-size: 15px; line-height: 1.85; color: #4a3a42;
+    white-space: pre-wrap; word-break: break-word;
+    background: #fffdf6; border-radius: 12px; padding: 16px;
+    border: 1px dashed #ffd3e3; margin-bottom: 14px;
+  }
+  .panel h2 { font-size: 18px; color: #4a3a42; margin-bottom: 8px; }
+  .panel textarea, .panel input[type=text] {
+    width: 100%; padding: 12px 14px; border-radius: 12px;
+    border: 1.5px solid #ffd3e3; font-size: 14px; outline: none;
+    font-family: inherit; color: #4a3a42; margin-bottom: 12px;
+  }
+  .panel textarea { min-height: 240px; line-height: 1.75; resize: vertical; }
+  .panel textarea:focus, .panel input:focus { border-color: #ff9ec4; }
+  .actions { display: flex; gap: 10px; flex-wrap: wrap; }
+  .btn {
+    padding: 9px 18px; border-radius: 10px; cursor: pointer; font-size: 14px;
+    border: 1.5px solid #ffd3e3; background: #fff; color: #9a6d84; font-family: inherit; transition: all .2s;
+  }
+  .btn:hover { border-color: #ff9ec4; color: #d1567f; }
+  .btn.primary { background: linear-gradient(135deg, #ff9ec4, #c7b3f5); color: #fff; border: none; font-weight: 700; }
+  .btn.primary:hover { transform: translateY(-1px); box-shadow: 0 5px 14px rgba(255,123,169,.4); }
+  .btn.danger:hover { border-color: #ff7b7b; color: #c0392b; }
+  .msg { margin-top: 12px; padding: 10px 14px; border-radius: 10px; font-size: 13.5px; display: none; }
+  .msg.ok { display: block; background: rgba(163,230,193,.35); color: #217a5b; }
+  .msg.err { display: block; background: rgba(255,190,190,.4); color: #b03a3a; }
+  .rel-line { margin-top: 10px; font-size: 12.5px; color: #a06bb8; }
+  select { font-family: inherit; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>💡 芒果基地 · 灵感笔记本</h1>
+    <a href="/" id="back-link">← 回博客首页</a>
+  </header>
+
+  <!-- 列表视图 -->
+  <div id="view-list">
+    <div class="toolbar">
+      <input type="text" id="q" placeholder="🔍 搜索灵感内容…">
+      <button class="new-btn" id="btn-new">➕ 新灵感</button>
+    </div>
+    <div class="toolbar" id="status-filter">
+      <button class="btn st on" data-s="">全部</button>
+      <button class="btn st" data-s="新">新</button>
+      <button class="btn st" data-s="发酵">发酵</button>
+      <button class="btn st" data-s="已转正">已转正</button>
+    </div>
+    <div class="notes" id="notes"></div>
+    <div class="empty hidden" id="empty">灵感库还是空的——点右上角「➕ 新灵感」写下第一条吧。</div>
+  </div>
+
+  <!-- 详情视图 -->
+  <div id="view-detail" class="hidden">
+    <div class="panel">
+      <h2 id="d-title"></h2>
+      <div class="meta">
+        <span id="d-date"></span>
+        <span class="note-status" id="d-status"></span>
+        <span id="d-tags"></span>
+      </div>
+      <div class="content" id="d-content"></div>
+      <div class="rel-line hidden" id="d-rel"></div>
+      <div class="actions">
+        <button class="btn primary" id="btn-edit">✏️ 编辑</button>
+        <button class="btn" id="btn-promote">📝 转正为文章</button>
+        <button class="btn danger" id="btn-del">🗑 删除</button>
+        <button class="btn" id="btn-back">← 返回列表</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 编辑 / 新建视图 -->
+  <div id="view-edit" class="hidden">
+    <div class="panel">
+      <h2 id="e-title"></h2>
+      <textarea id="e-content" placeholder="想到什么写什么……"></textarea>
+      <div class="actions" style="margin-bottom:12px">
+        <select id="e-status" style="padding:9px 12px;border-radius:10px;border:1.5px solid #ffd3e3;font-size:14px;">
+          <option value="新">状态：新</option>
+          <option value="发酵">状态：发酵中</option>
+          <option value="已转正">状态：已转正</option>
+        </select>
+        <input type="text" id="e-tags" placeholder="标签，逗号隔开（可留空）" style="flex:1">
+      </div>
+      <div class="actions">
+        <button class="btn primary" id="e-save">💾 保存</button>
+        <button class="btn" id="e-cancel">取消</button>
+      </div>
+      <div class="msg" id="e-msg"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+  var $ = function (id) { return document.getElementById(id); };
+
+  // 智能返回：从哪进来就回哪去（referrer → sessionStorage 兜底 → 首页）
+  (function () {
+    var back = $('back-link');
+    var p = null;
+    try {
+      var ref = document.referrer || '';
+      if (ref.indexOf(location.origin) === 0) p = ref.slice(location.origin.length) || '/';
+      if (!p || /^\/(write|ideas|admin|api)/.test(p)) {
+        p = sessionStorage.getItem('mango-last') || null;
+      }
+    } catch (e) { p = null; }
+    if (p && !/^\/(write|ideas|admin|api)/.test(p)) {
+      var names = {
+        '/bangumi/': '番剧墙', '/galgame/': 'Galgame 墙', '/works/': '作品墙',
+        '/music/': '音乐页', '/write/': '写作台', '/home/': '首页', '/': '博客首页'
+      };
+      back.href = p;
+      back.textContent = '← 返回' + (names[p] || '上一页');
+    }
+  })();
+  var items = [];        // 全部灵感
+  var filterStatus = '';
+  var query = '';
+  var current = null;    // 当前详情对应的灵感
+  var editing = false;   // 是否为编辑已有灵感（false = 新建）
+
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  }
+
+  function load() {
+    return fetch('/api/inspirations').then(function (r) { return r.json(); }).then(function (res) {
+      if (res.ok) items = res.inspirations;
+      renderList();
+    });
+  }
+
+  function renderList() {
+    var box = $('notes');
+    var list = items.filter(function (it) {
+      if (filterStatus && it.status !== filterStatus) return false;
+      if (query && (it.body + ' ' + (it.tags || []).join(' ')).indexOf(query) === -1) return false;
+      return true;
+    });
+    $('empty').style.display = list.length ? 'none' : 'block';
+    box.innerHTML = list.map(function (it) {
+      var rel = (it.related || []).length ? '<div class="note-rel">🔗 相关：' + esc(it.related.join(' / ')) + '</div>' : '';
+      return '<div class="note" data-file="' + esc(it.file) + '">'
+        + '<div class="note-meta"><span>' + esc(it.date) + '</span><span class="note-status ' + esc(it.status) + '">' + esc(it.status) + '</span></div>'
+        + '<div class="note-text">' + esc(it.body) + '</div>'
+        + rel + '</div>';
+    }).join('');
+  }
+
+  function showView(v) {
+    ['view-list', 'view-detail', 'view-edit'].forEach(function (id) {
+      $(id).classList.toggle('hidden', id !== v);
+    });
+  }
+
+  function openDetail(file) {
+    current = items.filter(function (it) { return it.file === file; })[0];
+    if (!current) return;
+    $('d-title').textContent = current.title;
+    $('d-date').textContent = current.date;
+    $('d-status').textContent = current.status;
+    $('d-status').className = 'note-status ' + current.status;
+    $('d-tags').textContent = (current.tags || []).length ? '🏷 ' + current.tags.join(' / ') : '';
+    $('d-content').textContent = current.body;
+    var rel = current.related || [];
+    $('d-rel').style.display = rel.length ? 'block' : 'none';
+    $('d-rel').textContent = '🔗 相关灵感：' + rel.join(' / ');
+    showView('view-detail');
+  }
+
+  function openEdit() {
+    editing = !!current;
+    $('e-title').textContent = editing ? '✏️ 编辑灵感' : '💡 新灵感';
+    $('e-content').value = editing ? current.body : '';
+    $('e-status').value = editing ? current.status : '新';
+    $('e-tags').value = editing ? (current.tags || []).join(', ') : '';
+    $('e-msg').className = 'msg';
+    showView('view-edit');
+  }
+
+  // 列表交互：点卡片进详情
+  $('notes').addEventListener('click', function (e) {
+    var n = e.target.closest('.note');
+    if (n) openDetail(n.dataset.file);
+  });
+  $('q').addEventListener('input', function () { query = this.value.trim(); renderList(); });
+  $('btn-new').addEventListener('click', function () { current = null; openEdit(); });
+  $('btn-back').addEventListener('click', function () { showView('view-list'); load(); });
+
+  // 状态筛选
+  $('status-filter').addEventListener('click', function (e) {
+    var b = e.target.closest('.st');
+    if (!b) return;
+    document.querySelectorAll('.st').forEach(function (x) { x.classList.remove('on'); });
+    b.classList.add('on');
+    filterStatus = b.dataset.s;
+    renderList();
+  });
+
+  // 编辑保存
+  $('btn-edit').addEventListener('click', openEdit);
+  $('e-save').addEventListener('click', function () {
+    var btn = this;
+    btn.disabled = true;
+    var payload = editing
+      ? { file: current.file, content: $('e-content').value, status: $('e-status').value, tags: $('e-tags').value.split(/[,，、]/).map(function (s) { return s.trim(); }).filter(Boolean) }
+      : { content: $('e-content').value, tags: $('e-tags').value.split(/[,，、]/).map(function (s) { return s.trim(); }).filter(Boolean) };
+    fetch(editing ? '/api/inspiration/update' : '/api/inspiration', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
+    }).then(function (r) { return r.json(); }).then(function (res) {
+      btn.disabled = false;
+      var m = $('e-msg');
+      m.className = 'msg ' + (res.ok ? 'ok' : 'err');
+      m.textContent = res.message;
+      if (res.ok) load().then(function () {
+        if (editing) { showView('view-list'); } else { showView('view-list'); }
+      });
+    }).catch(function () { btn.disabled = false; });
+  });
+  $('e-cancel').addEventListener('click', function () {
+    if (editing) showView('view-detail'); else showView('view-list');
+  });
+
+  // 转正
+  $('btn-promote').addEventListener('click', function () {
+    var title = prompt('转正后的文章标题：', current.body.split('\n')[0].slice(0, 30));
+    if (title === null) return;
+    if (!title.trim()) { alert('标题不能为空'); return; }
+    fetch('/api/inspiration/promote', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ file: current.file, title: title.trim() })
+    }).then(function (r) { return r.json(); }).then(function (res) {
+      if (res.ok) {
+        current = null;
+        load().then(function () { showView('view-list'); });
+        window.open(res.url, '_blank');
+      } else { alert(res.message); }
+    });
+  });
+
+  // 删除
+  $('btn-del').addEventListener('click', function () {
+    if (!confirm('确定删除这条灵感吗？删除后无法恢复。')) return;
+    fetch('/api/inspiration/delete', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ file: current.file })
+    }).then(function (r) { return r.json(); }).then(function (res) {
+      if (res.ok) { current = null; load().then(function () { showView('view-list'); }); }
+      else alert(res.message);
+    });
+  });
+
+  load();
+</script>
+<script src="/js/bgm.js"></script><script src="/js/mango-fab.js"></script></body>
+</html>

@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <author>
+    <name>芒果</name>
+  </author>
+  <generator uri="https://hexo.io/">Hexo</generator>
+  <id>https://tu12581.github.io/</id>
+  <link href="https://tu12581.github.io/" rel="alternate"/>
+  <link href="https://tu12581.github.io/atom.xml" rel="self"/>
+  <rights>All rights reserved 2026, 芒果</rights>
+  <subtitle>芒果的个人记录基地：技术、随感、看番、音乐与作品</subtitle>
+  <title>芒果基地</title>
+  <updated>2026-09-05T18:22:42.063Z</updated>
+  <entry>
+    <author>
+      <name>芒果</name>
+    </author>
+    <category term="随感" scheme="https://tu12581.github.io/categories/%E9%9A%8F%E6%84%9F/"/>
+    <category term="随笔" scheme="https://tu12581.github.io/tags/%E9%9A%8F%E7%AC%94/"/>
+    <content>
+      <![CDATA[<p>在各个平台发内容，像是住在别人的房子里：装修要按房东的规矩，哪天平台没了，东西也就散了。</p><p>所以想有一个自己的基地——服务器是自己的（哪怕暂时只是本地文件夹），排版是自己的，分类是自己定的。看过的番、玩过的游戏、突然冒出来的灵感，都放在固定的地方，过几年回来翻一翻，能看到自己走过的路。</p><p>「记录」本身就有价值，哪怕没有读者。</p><p>这是随感分类的第一篇。以后这里会放随笔、读后感，和一些不成熟但值得留下的想法。</p>]]>
+    </content>
+    <id>https://tu12581.github.io/posts/first-essay/</id>
+    <link href="https://tu12581.github.io/posts/first-essay/"/>
+    <published>2026-09-06T04:30:00.000Z</published>
+    <summary>
+      <![CDATA[<p>在各个平台发内容，像是住在别人的房子里：装修要按房东的规矩，哪天平台没了，东西也就散了。</p>
+<p>所以想有一个自己的基地——服务器是自己的（哪怕暂时只是本地文件夹），排版是自己的，分类是自己定的。看过的番、玩过的游戏、突然冒出来的灵感，都放在固定的地方，过几年回来翻一]]>
+    </summary>
+    <title>开博随感：为什么要有自己的基地</title>
+    <updated>2026-09-05T18:22:42.063Z</updated>
+  </entry>
+  <entry>
+    <author>
+      <name>芒果</name>
+    </author>
+    <category term="技术" scheme="https://tu12581.github.io/categories/%E6%8A%80%E6%9C%AF/"/>
+    <category term="Hexo" scheme="https://tu12581.github.io/tags/Hexo/"/>
+    <category term="搭建" scheme="https://tu12581.github.io/tags/%E6%90%AD%E5%BB%BA/"/>
+    <content>
+      <![CDATA[<p>欢迎来到「芒果基地」🥭 —— 这是本站的第一篇文章，顺手把搭建过程记录下来。</p><h2 id="这是个什么地方"><a href="#这是个什么地方" class="headerlink" title="这是个什么地方"></a>这是个什么地方</h2><p>一个功能丰富的个人基地，板块各有分工：</p><ul><li><strong>技术 &#x2F; 随感</strong>：正经文章走这里，按分类归档</li><li><strong>番剧 &#x2F; Galgame</strong>：记录墙，改 <code>source/_data/</code> 下的 yml 就能更新</li><li><strong>音乐 &#x2F; 作品 &#x2F; 看板 &#x2F; 友链</strong>：板块页面已就位，内容逐步填充</li></ul><h2 id="技术栈"><a href="#技术栈" class="headerlink" title="技术栈"></a>技术栈</h2><table><thead><tr><th>层</th><th>选择</th></tr></thead><tbody><tr><td>生成器</td><td>Hexo 8</td></tr><tr><td>主题</td><td>Butterfly 5.7</td></tr><tr><td>运行环境</td><td>便携版 Node.js 22（不污染系统）</td></tr></tbody></table><h2 id="怎么写新文章"><a href="#怎么写新文章" class="headerlink" title="怎么写新文章"></a>怎么写新文章</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">npx hexo new post <span class="string">&quot;文章标题&quot;</span></span><br></pre></td></tr></table></figure><p>新文章出现在 <code>source/_posts/</code>，写好 front-matter（categories、tags）保存即可，本地预览即时生效。</p><h2 id="接下来"><a href="#接下来" class="headerlink" title="接下来"></a>接下来</h2><p>按路线图推进：灵感工作模式 → 看板图表 → 音乐歌单 → 阶段 2 上线。敬请期待。</p>]]>
+    </content>
+    <id>https://tu12581.github.io/posts/hello-mango/</id>
+    <link href="https://tu12581.github.io/posts/hello-mango/"/>
+    <published>2026-09-06T04:00:00.000Z</published>
+    <summary>
+      <![CDATA[<p>欢迎来到「芒果基地」🥭 —— 这是本站的第一篇文章，顺手把搭建过程记录下来。</p>
+<h2 id="这是个什么地方"><a href="#这是个什么地方" class="headerlink" title="这是个什么地方"></a>这是个什么地方</h2><p>一个功]]>
+    </summary>
+    <title>博客开工：芒果基地搭建记</title>
+    <updated>2026-09-05T17:19:50.865Z</updated>
+  </entry>
+</feed>

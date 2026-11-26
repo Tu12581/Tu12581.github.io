@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>站点设置 · 芒果基地</title>
+<link rel="icon" href="/img/favicon.svg">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
+    min-height: 100vh;
+    background: linear-gradient(160deg, #fff0f6 0%, #ffe3f0 40%, #e6d6ff 100%);
+    padding: 28px 16px 60px;
+  }
+  .wrap { max-width: 680px; margin: 0 auto; }
+  header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; flex-wrap: wrap; gap: 8px; }
+  header h1 { font-size: 21px; color: #d1567f; text-shadow: 0 1px 0 #fff; }
+  header a { color: #a06bb8; text-decoration: none; font-size: 14px; }
+
+  .card {
+    background: rgba(255,255,255,.88);
+    border: 1px solid rgba(255,158,196,.35);
+    border-radius: 18px; padding: 20px;
+    box-shadow: 0 8px 24px rgba(255,123,169,.10);
+    display: flex; flex-direction: column; gap: 14px; margin-bottom: 18px;
+  }
+  .card h2 { font-size: 16.5px; color: #4a3a42; margin-bottom: 2px; }
+  .card .sub { font-size: 12.5px; color: #a08494; }
+
+  .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+  .row > * { flex: 1; min-width: 130px; }
+
+  input[type=text], input[type=number], textarea, select {
+    width: 100%; padding: 11px 14px; border-radius: 12px;
+    border: 1.5px solid #ffd3e3; background: #fff;
+    font-size: 14px; color: #4a3a42; outline: none; font-family: inherit;
+    transition: border .2s, box-shadow .2s;
+  }
+  input:focus, textarea:focus, select:focus { border-color: #ff9ec4; box-shadow: 0 0 0 3px rgba(255,158,196,.18); }
+  textarea { min-height: 84px; resize: vertical; line-height: 1.6; }
+
+  .switch-row { display: flex; align-items: center; gap: 10px; cursor: pointer; user-select: none; }
+  .switch-row input[type=checkbox] { width: 18px; height: 18px; accent-color: #ff7ba9; cursor: pointer; }
+  .switch-row span { font-size: 14px; color: #4a3a42; }
+
+  input[type=range] { width: 100%; accent-color: #ff7ba9; }
+
+  .save {
+    border: none; border-radius: 12px; padding: 12px 26px; align-self: flex-start;
+    background: linear-gradient(135deg, #ff9ec4, #c7b3f5);
+    color: #fff; font-size: 15px; font-weight: 700; cursor: pointer;
+    box-shadow: 0 5px 14px rgba(255,123,169,.35); transition: all .2s; font-family: inherit;
+  }
+  .save:hover { transform: translateY(-2px); box-shadow: 0 8px 18px rgba(255,123,169,.45); }
+  .msg { padding: 11px 15px; border-radius: 12px; font-size: 13.5px; display: none; }
+  .msg.ok { display: block; background: rgba(163,230,193,.35); color: #217a5b; }
+  .msg.err { display: block; background: rgba(255,190,190,.4); color: #b03a3a; }
+  .hidden { display: none !important; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>⚙️ 芒果基地 · 站点设置</h1>
+    <a href="/" id="back-link">← 回博客首页</a>
+  </header>
+
+  <section class="card">
+    <h2>🎵 背景音乐 BGM</h2>
+    <div class="sub">全站左下角出现一个小唱片按钮，访客可自行开关；配合网易云会员请在浏览器登录 music.163.com</div>
+    <label class="switch-row"><input type="checkbox" id="s-enable"><span>启用背景音乐</span></label>
+    <div class="row">
+      <select id="s-mode">
+        <option value="url">模式：音乐直链（mp3 等音频地址）</option>
+        <option value="netease">模式：网易云歌单（填歌单 ID）</option>
+      </select>
+    </div>
+    <input type="text" id="s-url" placeholder="音频直链，如 https://.../music.mp3（可放本地 source/music/ 里引用 /music/xx.mp3）">
+    <input type="text" id="s-netease" class="hidden" placeholder="网易云歌单 ID（歌单页链接里 id= 后面的数字）">
+    <div class="row">
+      <div>
+        <div class="sub" style="margin-bottom:4px">音量 <span id="s-vol-text">30</span>%</div>
+        <input type="range" id="s-volume" min="0" max="100" step="5">
+      </div>
+    </div>
+    <label class="switch-row"><input type="checkbox" id="s-autoplay"><span>自动播放（浏览器可能拦截，会改为提示访客点一下）</span></label>
+  </section>
+
+  <section class="card">
+    <h2>📢 全站公告</h2>
+    <div class="sub">显示在左侧边栏顶部；留空则不显示</div>
+    <textarea id="s-announcement" placeholder="比如：新的一年也要多多记录呀 🥭"></textarea>
+  </section>
+
+  <section class="card">
+    <button class="save" id="s-save">💾 保存设置</button>
+    <div class="msg" id="s-msg"></div>
+  </section>
+</div>
+
+<script>
+  var $ = function (id) { return document.getElementById(id); };
+
+  // 智能返回：从哪进来就回哪去
+  (function () {
+    var back = $('back-link');
+    var p = null;
+    try {
+      var ref = document.referrer || '';
+      if (ref.indexOf(location.origin) === 0) p = ref.slice(location.origin.length) || '/';
+      if (!p || /^\/(write|ideas|settings|admin|api)/.test(p)) p = sessionStorage.getItem('mango-last') || null;
+    } catch (e) { p = null; }
+    if (p && !/^\/(write|ideas|settings|admin|api)/.test(p)) back.href = p;
+  })();
+  try { sessionStorage.setItem('mango-last', '/settings/'); } catch (e) {}
+
+  function syncMode() {
+    var isUrl = $('s-mode').value === 'url';
+    $('s-url').classList.toggle('hidden', !isUrl);
+    $('s-netease').classList.toggle('hidden', isUrl);
+  }
+  $('s-mode').addEventListener('change', syncMode);
+  $('s-volume').addEventListener('input', function () { $('s-vol-text').textContent = this.value; });
+
+  fetch('/api/settings').then(function (r) { return r.json(); }).then(function (res) {
+    if (!res.ok) return;
+    var s = res.settings || {};
+    var b = s.bgm || {};
+    $('s-enable').checked = !!b.enable;
+    $('s-mode').value = b.mode === 'netease' ? 'netease' : 'url';
+    $('s-url').value = b.url || '';
+    $('s-netease').value = b.netease_id || '';
+    $('s-volume').value = Math.round((parseFloat(b.volume) || 0.3) * 100);
+    $('s-vol-text').textContent = $('s-volume').value;
+    $('s-autoplay').checked = !!b.autoplay;
+    $('s-announcement').value = s.announcement || '';
+    syncMode();
+  });
+
+  $('s-save').addEventListener('click', function () {
+    var btn = this;
+    btn.disabled = true;
+    fetch('/api/settings', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        bgm: {
+          enable: $('s-enable').checked,
+          mode: $('s-mode').value,
+          url: $('s-url').value.trim(),
+          netease_id: $('s-netease').value.trim(),
+          volume: (parseInt($('s-volume').value, 10) || 30) / 100,
+          autoplay: $('s-autoplay').checked
+        },
+        announcement: $('s-announcement').value
+      })
+    }).then(function (r) { return r.json(); }).then(function (res) {
+      btn.disabled = false;
+      var m = $('s-msg');
+      m.className = 'msg ' + (res.ok ? 'ok' : 'err');
+      m.textContent = res.message + (res.ok ? '，刷新页面即可生效' : '');
+    }).catch(function () { btn.disabled = false; });
+  });
+</script>
+<script src="/js/bgm.js"></script><script src="/js/mango-fab.js"></script></body>
+</html>

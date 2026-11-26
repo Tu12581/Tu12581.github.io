@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#fff0f6"/>
+      <stop offset=".42" stop-color="#ffdcec"/>
+      <stop offset=".74" stop-color="#e6d6ff"/>
+      <stop offset="1" stop-color="#d4e8ff"/>
+    </linearGradient>
+    <radialGradient id="glow" cx=".5" cy=".5" r=".5">
+      <stop offset="0" stop-color="#ffffff" stop-opacity=".85"/>
+      <stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
+    </radialGradient>
+    <g id="petal">
+      <ellipse cx="0" cy="0" rx="14" ry="8" fill="#ffb3cd" opacity=".75" transform="rotate(-24)"/>
+    </g>
+    <g id="spark">
+      <path d="M0 -9 L2.2 -2.2 L9 0 L2.2 2.2 L0 9 L-2.2 2.2 L-9 0 L-2.2 -2.2 Z" fill="#ffffff" opacity=".9"/>
+    </g>
+  </defs>
+  <rect width="1600" height="900" fill="url(#sky)"/>
+  <circle cx="1230" cy="240" r="300" fill="url(#glow)"/>
+  <circle cx="1230" cy="240" r="96" fill="#fffafc" opacity=".95"/>
+  <circle cx="1230" cy="240" r="120" fill="none" stroke="#ffe1ee" stroke-width="6" opacity=".8"/>
+  <g opacity=".6" fill="#ffffff">
+    <ellipse cx="300" cy="240" rx="130" ry="42"/>
+    <ellipse cx="410" cy="215" rx="90" ry="34"/>
+    <ellipse cx="205" cy="220" rx="70" ry="28"/>
+    <ellipse cx="980" cy="150" rx="100" ry="30" opacity=".7"/>
+    <ellipse cx="1060" cy="130" rx="65" ry="22" opacity=".7"/>
+  </g>
+  <use href="#petal" x="180" y="430"/>
+  <use href="#petal" x="340" y="560" transform="rotate(30 340 560)" opacity=".8"/>
+  <use href="#petal" x="520" y="380"/>
+  <use href="#petal" x="640" y="640" transform="rotate(-40 640 640)" opacity=".6"/>
+  <use href="#petal" x="820" y="470"/>
+  <use href="#petal" x="960" y="620" transform="rotate(50 960 620)" opacity=".7"/>
+  <use href="#petal" x="1120" y="430"/>
+  <use href="#petal" x="1380" y="560" transform="rotate(-25 1380 560)" opacity=".8"/>
+  <use href="#petal" x="1490" y="420"/>
+  <use href="#spark" x="240" y="140"/>
+  <use href="#spark" x="760" y="110" transform="scale(.7)"/>
+  <use href="#spark" x="1460" y="130"/>
+  <use href="#spark" x="90" y="640" transform="scale(.8)"/>
+  <use href="#spark" x="1540" y="700" transform="scale(.6)"/>
+  <path d="M0 900 L0 820 Q 200 760 430 810 T 900 800 T 1330 815 T 1600 790 L1600 900 Z" fill="#ffffff" opacity=".35"/>
+  <path d="M0 900 L0 860 Q 300 810 620 850 T 1180 845 T 1600 830 L1600 900 Z" fill="#ffb9d4" opacity=".38"/>
+</svg>
